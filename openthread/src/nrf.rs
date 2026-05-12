@@ -38,6 +38,17 @@ impl<'a> NrfRadio<'a> {
         this
     }
 
+    pub fn new_with_config(radio: Ieee802154<'a>, config: Config) -> Self {
+        let mut this = Self {
+            driver: radio,
+            config: config,
+        };
+
+        this.update_driver_config();
+
+        this
+    }
+
     fn update_driver_config(&mut self) {
         let config = &self.config;
 
