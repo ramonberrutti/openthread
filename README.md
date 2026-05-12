@@ -36,6 +36,15 @@ For the on-the-fly OpenThread CMake build to work, you'll need to install and se
 - Recent Clang (for Espressif `xtensa`, [it must be the Espressif fork](https://crates.io/crates/espup), but for all other chips, the stock Clang would work)
 - CMake and Ninja
 
+To pre-generate bindings and static libraries into this repository for a specific target, first initialize the bundled OpenThread submodule and then run the `xtask` generator:
+
+```bash
+git submodule update --init --recursive openthread-sys/openthread
+cargo run --manifest-path xtask/Cargo.toml -- gen thumbv7em-none-eabihf
+```
+
+This writes the generated bindings to `openthread-sys/src/include/thumbv7em-none-eabihf.rs` and the static libraries to `openthread-sys/libs/thumbv7em-none-eabihf/`.
+
 As per above, since `openthread` does a few calls into the C standard library (primarily `str*` functions), the GCC toolchain needs to have the `newlib` (or other libc headers for e.g. non-embedded scenarios) in its sysroot, which is usually the case anyway. `newlib` however is only used _at compile-time_ on baremetal targets (for a few libc headers) and not linked-in.
 
 Examples of GCC toolchains that are known to work fine:

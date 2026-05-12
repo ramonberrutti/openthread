@@ -285,6 +285,17 @@ impl CMakeConfigurer {
             .define("CMAKE_EXPORT_COMPILE_COMMANDS", "ON")
             .define("CMAKE_BUILD_TYPE", "MinSizeRel");
 
+        if let Some(byte_order) = self.derive_byte_order() {
+            // OpenThread's CMake uses the deprecated `TEST_BIG_ENDIAN()` helper.
+            // For cross-compiling bare-metal targets, that helper can fall back to
+            // a legacy probe path that is brittle and may fail during configure.
+            // Providing the target byte order up front lets modern CMake skip the
+            // legacy probe entirely.
+            config
+                .define("CMAKE_C_BYTE_ORDER", byte_order)
+                .define("CMAKE_CXX_BYTE_ORDER", byte_order);
+        }
+
         if let Some(target_dir) = target_dir {
             config
                 .define("CMAKE_ARCHIVE_OUTPUT_DIRECTORY", target_dir)
@@ -485,6 +496,27 @@ impl CMakeConfigurer {
                 "xtensa-esp32s3-none-elf" | "xtensa-esp32s3-espidf" => &["-mlongcalls"],
                 _ => &[],
             }
+        }
+    }
+
+    fn derive_byte_order(&self) -> Option<&'static str> {
+        match self.target().as_str() {
+            "thumbv6m-none-eabi"
+            | "thumbv7em-none-eabi"
+            | "thumbv7em-none-eabihf"
+            | "riscv32imc-unknown-none-elf"
+            | "riscv32imc-esp-espidf"
+            | "riscv32imac-unknown-none-elf"
+            | "riscv32imac-esp-espidf"
+            | "riscv32imafc-unknown-none-elf"
+            | "riscv32imafc-esp-espidf"
+            | "xtensa-esp32-none-elf"
+            | "xtensa-esp32-espidf"
+            | "xtensa-esp32s2-none-elf"
+            | "xtensa-esp32s2-espidf"
+            | "xtensa-esp32s3-none-elf"
+            | "xtensa-esp32s3-espidf" => Some("LITTLE_ENDIAN"),
+            _ => None,
         }
     }
 
