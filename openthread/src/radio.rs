@@ -179,7 +179,7 @@ impl Config {
             channel: 11,
             // Run with max power by default
             // TODO: Figure out how to have this specified by the user
-            power: 20,
+            power: 0,
             cca: Cca::Carrier,
             sfd: 0,
             promiscuous: false,
